@@ -1,122 +1,171 @@
+import 'package:app_matrimony/provider/login/login_provider.dart';
+import 'package:app_matrimony/provider/otp/otp_provider.dart';
+import 'package:app_matrimony/provider/profile/profile_provider.dart';
+import 'package:app_matrimony/provider/signup/signup_provider.dart';
+import 'package:app_matrimony/provider/chat/profile_chat_provider.dart';
+import 'package:app_matrimony/ui/intro/splash_page.dart';
+import 'package:app_matrimony/utils/constants/app_colors.dart';
+import 'package:app_matrimony/utils/constants/app_helper.dart';
+import 'package:app_matrimony/utils/constants/app_loader.dart';
+import 'package:app_matrimony/utils/constants/app_theme.dart';
+import 'package:app_matrimony/utils/constants/flavor_config.dart';
+import 'package:app_matrimony/utils/di/app_di.dart';
+import 'package:app_matrimony/utils/router/app_router.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:overlay_support/overlay_support.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
+import 'base/base_provider.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  if (!kIsWeb) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: AppColors.primaryColor,
+      statusBarIconBrightness: Brightness.light,
+    ));
   }
 
+  // Initialize flavor configuration.
+  //
+  // Override at run time:
+  //   flutter run -d chrome --dart-define=BASE_URL=http://localhost:5001/api/
+  //
+  // NOTE (web): the browser talks to the API directly, so the host must be
+  // reachable *from the browser* and the server must send CORS headers.
+  // On web we default to `localhost` because `127.0.0.1/localhost` is treated
+  // as a secure origin, while a LAN IP over plain http can be blocked.
+  const String defineUrl = String.fromEnvironment('BASE_URL');
+  final String baseUrl = defineUrl.isNotEmpty
+      ? defineUrl
+      : kIsWeb
+          ? 'http://localhost:5000/api/'
+          : 'http://192.168.1.2:5000/api/';
+  FlavorConfig(
+    flavor: Flavor.production,
+    baseUrl: baseUrl,
+    appName: 'Matrimony',
+  );
+
+  await setupLocator();
+  
+  runApp(const MatrimonyApp());
+}
+
+class MatrimonyApp extends StatelessWidget {
+  const MatrimonyApp({super.key});
+  
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<BaseProvider>(create: (_) => BaseProvider()),
+        ChangeNotifierProvider(create: (_) => SignupProvider()),
+        ChangeNotifierProvider(create: (_) => LoginProvider()),
+        ChangeNotifierProvider(create: (_) => OtpProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileChatProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+      ],
+      child: ResponsiveSizer(builder: (context, orientation, screenType) {
+        return Consumer<ThemeNotifier>(
+            builder: (context, themeNotifier, child) {
+              return OverlaySupport.global(
+                  child: GetMaterialApp(
+                    title: 'Matrimony',
+                    debugShowCheckedModeBanner: false,
+                    theme: ThemeData(
+                      scaffoldBackgroundColor: themeNotifier.bgColor,
+                      // Use dynamic background
+                      fontFamily: themeNotifier.fontFamily,
+                      textTheme: TextTheme(
+                        displayLarge: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        displayMedium: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        displaySmall: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        headlineLarge: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        headlineMedium: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        headlineSmall: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        titleLarge: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        titleMedium: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        titleSmall: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        bodyLarge: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        bodyMedium: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        bodySmall: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        labelLarge: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        labelMedium: TextStyle(fontFamily: themeNotifier.fontFamily),
+                        labelSmall: TextStyle(fontFamily: themeNotifier.fontFamily),
+                      ),
+                      colorScheme: ColorScheme.fromSeed(
+                        seedColor: themeNotifier.primaryColor,
+                        primary: themeNotifier.primaryColor,
+                        surface: themeNotifier.bgColor, // Use dynamic background
+                      ),
+                      elevatedButtonTheme: ElevatedButtonThemeData(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: themeNotifier.buttonColor,
+                          // Use dynamic button color
+                          foregroundColor: Colors.white,
+                          textStyle: TextStyle(
+                            fontFamily: themeNotifier.fontFamily,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      appBarTheme: AppBarTheme(
+                        backgroundColor: themeNotifier.primaryColor,
+                        // Use dynamic primary color
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        titleTextStyle: TextStyle(
+                          fontFamily: themeNotifier.fontFamily,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      radioTheme: RadioThemeData(
+                        fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                          if (states.contains(WidgetState.selected)) {
+                            return themeNotifier.primaryColor;
+                          }
+                          return Colors.grey;
+                        }),
+                      ),
+                      checkboxTheme: CheckboxThemeData(
+                        fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                          if (states.contains(WidgetState.selected)) {
+                            return themeNotifier.primaryColor;
+                          }
+                          return Colors.grey;
+                        }),
+                      ),
+                    ),
+                    supportedLocales: const [
+                      Locale("en"),
+                    ],
+                    builder: (context, child) {
+                      return LoaderView(
+                        child: child!,
+                      );
+                    },
+                    initialRoute: kIsWeb ? '/' : null,
+                    home: kIsWeb ? null : const SplashPage(),
+                    onGenerateRoute: AppRouter.generateRoute,
+                    onUnknownRoute: (settings) {
+                      // Handle unknown routes for web
+                      if (kIsWeb) {
+                        return AppRouter.generateRoute(const RouteSettings(name: '/'));
+                      }
+                      return AppRouter.generateRoute(const RouteSettings(name: 'SplashPage'));
+                    },
+                    navigatorObservers: [AppHelper.routeObserver],
+                  ));
+            });
+      }),
     );
   }
 }

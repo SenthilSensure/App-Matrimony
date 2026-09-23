@@ -71,7 +71,8 @@ void errorToast(String message) {
       const toastWidth = 500.0; // Fixed 500px width
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          duration: 800.milliseconds,
+         // duration: 800.milliseconds,
+          duration: 5.seconds,
           content: Container(
             constraints: const BoxConstraints(
               maxWidth: toastWidth,
@@ -102,7 +103,7 @@ void errorToast(String message) {
     // Mobile solution using Fluttertoast
     Fluttertoast.showToast(
         msg: message,
-        toastLength: Toast.LENGTH_SHORT,
+        toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
         backgroundColor: Colors.red[800],

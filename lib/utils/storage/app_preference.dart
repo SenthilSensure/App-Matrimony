@@ -262,18 +262,31 @@ class AppSharedPref {
     return false;
   }
 
-  // Login
-  set isLogin(bool value) {
+  // Login  ('Y' = logged in, 'N' = logged out)
+  static const String yes = 'Y';
+  static const String no = 'N';
+
+  set loginFlag(String value) {
     _saveToDisk(_isLoggedIn, value);
   }
 
-  bool get isLogin {
+  String get loginFlag {
     var data = _getFromDisk(_isLoggedIn);
-    if (data != null) {
+    if (data is String && data.isNotEmpty) {
       return data;
     }
-    return false;
+    // Backward compatibility with the old boolean flag
+    if (data is bool) {
+      return data ? yes : no;
+    }
+    return no;
   }
+
+  set isLogin(bool value) {
+    loginFlag = value ? yes : no;
+  }
+
+  bool get isLogin => loginFlag == yes;
 
   // User Details
   set addUser(CustomerData userData) {
@@ -343,7 +356,8 @@ class AppSharedPref {
     _preferences?.remove(_token);
     _preferences?.remove(_deviceToken);
     _preferences?.remove(_userData);
-    _preferences?.setBool(_isLoggedIn, false);
+    _preferences?.remove(_isLoggedIn);
+    loginFlag = no;
   }
 }
 

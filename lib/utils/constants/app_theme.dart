@@ -4,9 +4,9 @@ import 'app_fonts.dart';
 
 class ThemeNotifier extends ChangeNotifier {
   String _fontFamily = 'Poppins';
-  Color _primaryColor = const Color(0xFF082469);
-  Color _buttonColor = const Color(0xFF082469);
-  Color _bgColor = const Color(0xFFF5F5F5);
+  Color _primaryColor = AppColors.primaryColor;
+  Color _buttonColor = AppColors.buttonColor;
+  Color _bgColor = AppColors.backgroundColor;
 
   String get fontFamily => _fontFamily;
   Color get primaryColor => _primaryColor;

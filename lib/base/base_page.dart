@@ -41,6 +41,8 @@ mixin BasicPage<Page extends BasePage> on BaseState<Page> {
         drawer: drawer(),
         body: SafeArea(child: body()),
         bottomNavigationBar: bottomNav(),
+        floatingActionButton: floatingActionButton(),
+        floatingActionButtonLocation: floatingActionButtonLocation(),
       ),
     );
   }
@@ -76,6 +78,14 @@ mixin BasicPage<Page extends BasePage> on BaseState<Page> {
   Widget body();
 
   Widget? bottomNav() {
+    return null;
+  }
+
+  Widget? floatingActionButton() {
+    return null;
+  }
+
+  FloatingActionButtonLocation? floatingActionButtonLocation() {
     return null;
   }
 
